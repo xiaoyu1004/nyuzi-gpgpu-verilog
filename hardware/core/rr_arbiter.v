@@ -34,9 +34,5 @@ wire [2*NUM_REQUESTERS-1:0] req_rpt_bitmap  = {req_bitmap_i, req_bitmap_i};
 wire [2*NUM_REQUESTERS-1:0] grant_oh_rpt    = ~(req_rpt_bitmap - ({{NUM_REQUESTERS{1'b0}}, priority_oh})) & req_rpt_bitmap;
 
 assign grant_oh_o = grant_oh_rpt[2*NUM_REQUESTERS-1:NUM_REQUESTERS] | grant_oh_rpt[NUM_REQUESTERS-1:0];
-
-// `ifdef SIMULATION
-// assert($onehot0(priority_oh));
-// `endif
     
 endmodule

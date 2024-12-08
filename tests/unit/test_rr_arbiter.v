@@ -1,7 +1,4 @@
-module test_rr_arbiter(
-    input clk   ,
-    input rst_n
-);
+module test_rr_arbiter(input clk, input rst_n);
 localparam NUM_REQUESTERS = 4;
 
 reg [NUM_REQUESTERS-1:0] req_bitmap;

@@ -51,7 +51,7 @@ int main(int argc, char **argv, char **env)
     Verilated::traceEverOn(true);
     VerilatedVcdC* tfp = new VerilatedVcdC;
     testbench->trace(tfp, 99);
-    tfp->open("trace.vcd");
+    tfp->open("$MODULE$.vcd");
 #endif
 
     while (!Verilated::gotFinish())
@@ -89,9 +89,11 @@ def run_unit_test(filename, _):
         'verilator',
         '--unroll-count', '512',
         '--assert',
+        '--quiet-stats',
         '-I' + test_harness.HARDWARE_INCLUDE_DIR,
         '-I' + test_harness.HARDWARE_GENERAL_DIR,
         '-DSIMULATION=1',
+        '-DENABLE_SV_ASSERTION=1',
         '-Mdir', test_harness.WORK_DIR,
         '-cc', filename,
         '--exe', DRIVER_PATH

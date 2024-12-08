@@ -1,3 +1,4 @@
+`include "defines.vh"
 
 `ifdef SIMULATION//{
 `ifdef ENABLE_SV_ASSERTION//{
