@@ -9,11 +9,11 @@ reg [NUM_REQUESTERS-1:0]  grant_oh;
 rr_arbiter #(
     .NUM_REQUESTERS (NUM_REQUESTERS)
 ) inst_rr_arbiter (
-    .clk    (clk)                   ,
-    .rst_n  (rst_n)                 ,
+    .clk            (clk)           ,
+    .rst_n          (rst_n)         ,
 
-    .req_bitmap_i   (req_bitmap)    ,
-    .update_en_i    (update_en)     ,
+    .req_bitmap     (req_bitmap)    ,
+    .update_en      (update_en)     ,
 
     .grant_oh_o     (grant_oh)
 );

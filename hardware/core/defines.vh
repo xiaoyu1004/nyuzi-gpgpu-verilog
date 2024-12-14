@@ -1,6 +1,21 @@
 `ifndef DEFINES_VH
 `define DEFINES_VH
 
+`include "config.vh"
+
 // `define VENDOR_XILINX
+
+parameter L1_CACHE_NUM_WAYS = 4;
+parameter L1_CACHE_NUM_SETS = 16;
+
+parameter L1_CACHE_NUM_WAYS_LOG   = $clog2(L1_CACHE_NUM_WAYS);
+parameter L1_CACHE_NUM_SETS_LOG   = $clog2(L1_CACHE_NUM_SETS);
+
+parameter CACHE_LINE_BYTE_WIDTH   = NUM_VECTOR_LANES * 4;
+parameter CACHE_LINE_BIT_WIDTH    = CACHE_LINE_BYTE_WIDTH * 8;
+parameter CACHE_LINE_WORD_WIDTH   = CACHE_LINE_BYTE_WIDTH / 4;
+
+parameter CACHE_LINE_BYTE_WIDTH_LOG  = $clog2(CACHE_LINE_BYTE_WIDTH);
+parameter CACHE_LINE_TAG_WIDTH       = 32 - (L1_CACHE_NUM_SETS_LOG + CACHE_LINE_BYTE_WIDTH_LOG);
 
 `endif
