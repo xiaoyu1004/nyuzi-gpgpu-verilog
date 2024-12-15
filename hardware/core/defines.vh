@@ -5,6 +5,17 @@
 
 // `define VENDOR_XILINX
 
+/* core */
+parameter NUM_WARP_PER_CORE     = 4;
+parameter NUM_WARP_PER_CORE_LOG = $clog2(NUM_WARP_PER_CORE);
+
+parameter ADDR_WIDTH            = 32;
+parameter DATA_WIDTH            = 32;
+
+/* pipeline regs */
+parameter IFT_TO_IFD_BUS_WIDTH  = NUM_WARP_PER_CORE_LOG + ;
+
+/* cache */
 parameter L1_CACHE_NUM_WAYS = 4;
 parameter L1_CACHE_NUM_SETS = 16;
 

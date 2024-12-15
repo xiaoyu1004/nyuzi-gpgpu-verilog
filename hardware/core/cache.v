@@ -17,6 +17,7 @@ module cache #(
 
     input                                 access_tag_en         ,
     input   [NUM_SETS_LOG-1         :0]   access_tag_set_idx    ,
+    
     input   [CACHE_TAG_WIDTH-1      :0]   access_tag            ,
     output                                access_tag_hit        ,
     output  [NUM_WAYS_LOG-1         :0]   access_tag_hit_way_idx,
@@ -69,7 +70,7 @@ module cache #(
 
     oh_to_idx #(
         .OH_WIDTH (NUM_WAYS)
-    ) inst_oh_to_idx (
+    ) inst_cache_way_oh_to_idx (
         .one_hot    (access_hit_oh)         ,
         .idx        (access_tag_hit_way_idx)
     );

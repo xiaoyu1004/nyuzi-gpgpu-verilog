@@ -15,7 +15,7 @@ rr_arbiter #(
     .req_bitmap     (req_bitmap)    ,
     .update_en      (update_en)     ,
 
-    .grant_oh_o     (grant_oh)
+    .grant_oh       (grant_oh)
 );
 
 integer cycle = 0;
