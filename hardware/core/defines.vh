@@ -13,11 +13,9 @@ parameter ADDR_WIDTH            = 32;
 parameter DATA_WIDTH            = 32;
 
 /* pipeline regs */
-parameter IFT_TO_IFD_BUS_WIDTH  = NUM_WARP_PER_CORE_LOG + ;
+parameter IFT_TO_IFD_BUS_WIDTH  = ADDR_WIDTH + NUM_WARP_PER_CORE_LOG;
 
 /* cache */
-parameter L1_CACHE_NUM_WAYS = 4;
-parameter L1_CACHE_NUM_SETS = 16;
 
 parameter L1_CACHE_NUM_WAYS_LOG   = $clog2(L1_CACHE_NUM_WAYS);
 parameter L1_CACHE_NUM_SETS_LOG   = $clog2(L1_CACHE_NUM_SETS);

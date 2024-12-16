@@ -4,9 +4,12 @@ module ifetch_tag_stage(
     input                               clk                     ,
     input                               rst_n                   ,
 
-    input                               ifd_allowin             ,
+    // from csr
+    input  [NUM_WARP_PER_CORE-1     :0] warp_en_bitmap          ,
 
     // from ifetch data stage
+    input                               ifd_allowin             ,
+
     input                               ifd_cache_miss          ,
     input                               ifd_near_miss           ,
     input  [NUM_WARP_PER_CORE_LOG-1 :0] ifd_cache_miss_warp_idx ,
@@ -17,14 +20,14 @@ module ifetch_tag_stage(
 
     // to icache
     output                              ift_to_icache_fetch_en  ,
-    output [L1_CACHE_NUM_WAYS_LOG-1 :0] ift_to_icache_fetch_set_idx ,
+    output [L1_CACHE_NUM_SETS_LOG-1 :0] ift_to_icache_fetch_set_idx ,
 
     // from l2 interface
     input  [NUM_WARP_PER_CORE-1     :0] l2i_to_ift_wake_bitmap  ,
 
     // from writeback stage
     input                               wb_rollback_en          ,
-    input  [NUM_WARP_PER_CORE-1     :0] wb_rollback_warp_idx    ,
+    input  [NUM_WARP_PER_CORE_LOG-1 :0] wb_rollback_warp_idx    ,
     input  [ADDR_WIDTH-1            :0] wb_rollback_pc          
 );
     /* pre ift stage */
@@ -55,7 +58,7 @@ module ifetch_tag_stage(
     wire [NUM_WARP_PER_CORE-1:0]    icache_miss_warp_oh;
     idx_to_oh #(
         .IDX_WIDTH  (NUM_WARP_PER_CORE_LOG)
-    ) inst_miss_warp_idx_to_oh (
+    ) inst_icache_miss_warp_idx_to_oh (
         .idx        (ifd_cache_miss_warp_idx)   ,
         .one_hot    (icache_miss_warp_oh)
     );
@@ -63,19 +66,19 @@ module ifetch_tag_stage(
     wire [NUM_WARP_PER_CORE-1:0]    wb_rollback_warp_oh;
     idx_to_oh #(
         .IDX_WIDTH  (NUM_WARP_PER_CORE_LOG)
-    ) inst_miss_warp_idx_to_oh (
+    ) inst_wb_rollback_warp_idx_to_oh (
         .idx        (wb_rollback_warp_idx)   ,
         .one_hot    (wb_rollback_warp_oh)
     );
 
     wire [NUM_WARP_PER_CORE-1:0] icache_wait_warps_bitmap;
 
-    wire stop_fetch_warp_bitmap =   icache_wait_warps_bitmap                                                        |
-                                    (icache_miss_warp_oh  & {NUM_WARP_PER_CORE{ifd_cache_miss || ifd_near_miss}})   |
-                                    (wb_rollback_warp_oh  & {NUM_WARP_PER_CORE{wb_rollback_en}});
+    wire [NUM_WARP_PER_CORE-1:0] stop_fetch_warp_bitmap = icache_wait_warps_bitmap                                                      |
+                                                        (icache_miss_warp_oh  & {NUM_WARP_PER_CORE{ifd_cache_miss || ifd_near_miss}})   |
+                                                        (wb_rollback_warp_oh  & {NUM_WARP_PER_CORE{wb_rollback_en}});
 
-    wire can_fetch_warp_bitmap  = ~stop_fetch_warp_bitmap;
-    wire icache_fetch_en        = |can_fetch_warp_bitmap;
+    wire [NUM_WARP_PER_CORE-1:0] can_fetch_warp_bitmap  = warp_en_bitmap & (~stop_fetch_warp_bitmap);
+    wire icache_fetch_en                                = |can_fetch_warp_bitmap && ift_valid;
 
     assign ift_ready_go = icache_fetch_en;
 
@@ -104,22 +107,23 @@ module ifetch_tag_stage(
 
     genvar warp_idx;
     generate 
-        for (warp_idx = 0; warp_idx < NUM_WARP_PER_CORE; i = i + 1)
+        for (warp_idx = 0; warp_idx < NUM_WARP_PER_CORE; warp_idx = warp_idx + 1)
         begin : gen_for_blk_warp_pc
             wire warp_rollback    = wb_rollback_en && (wb_rollback_warp_idx == warp_idx);
             wire warp_cache_miss  = (ifd_cache_miss || ifd_near_miss) && (ifd_cache_miss_warp_idx == warp_idx);
             wire warp_selected    = icache_fetch_en && (selected_warp_idx == warp_idx);
             
-            wire [ADDR_WIDTH-1:0] ift_pc_nxt =  warp_rollback   ? wb_rollback_pc                    :
-                                                warp_cache_miss ? (ift_pc[warp_idx] - ADDR_WIDTH'4) :
-                                                warp_selected   ? (ift_pc[warp_idx] + ADDR_WIDTH'4) : 
+            wire [ADDR_WIDTH-1:0] ift_pc_nxt =  warp_rollback   ? wb_rollback_pc          :
+                                                warp_cache_miss ? (ift_pc[warp_idx] - 'h4) :
+                                                warp_selected   ? (ift_pc[warp_idx] + 'h4) : 
                                                 ift_pc[warp_idx];
 
-            sirv_gnrl_dfflr #(
+            sirv_gnrl_dfflrs_val #(
                 .DW (ADDR_WIDTH)
             ) inst_ift_pc (
                 .clk        (clk)                           ,
                 .rst_n      (rst_n)                         ,
+                .rst_v      ('hfffffffc)                    ,
 
                 .lden       (to_ift_valid && ift_allowin)   ,
                 .dnxt       (ift_pc_nxt)                    ,

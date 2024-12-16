@@ -11,7 +11,7 @@ module oh_to_idx #(
     generate
         for (i = 0; i < OH_WIDTH; i = i + 1)
         begin : gen_for_blk_oh_to_idx
-            assign gen_idx[i] = {IDX_WIDTH{one_hot[i]}} & IDX_WIDTH'(i)
+            assign gen_idx[i] = {IDX_WIDTH{one_hot[i]}} & IDX_WIDTH'(i);
         end
     endgenerate
 

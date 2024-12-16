@@ -9,7 +9,7 @@ module idx_to_oh #(
     generate
         for (i = 0; i < OH_WIDTH; i = i + 1)
         begin : gen_for_blk_idx_to_oh
-            assign one_hot[i] = (idx == IDX_WIDTH'i);
+            assign one_hot[i] = (idx == i);
         end
     endgenerate
 endmodule
