@@ -97,7 +97,7 @@ module test_ifetch_tag_stage(input clk, input rst_n);
             case (cycle)
                 0: begin
                     /* fetch inst */
-                    warp_en_bitmap          <= 'b0001;
+                    warp_en_bitmap          <= 'b0000;
                     ifd_allowin             <= 1'b1;
                 end
 
@@ -126,6 +126,11 @@ module test_ifetch_tag_stage(input clk, input rst_n);
                 end
 
                 4: begin
+                    assert(ift_to_ifd_valid == 1'b0);
+                    assert(ift_to_icache_fetch_en == 1'b0);
+                end
+
+                5: begin
                     assert(ift_to_ifd_valid == 1'b1);
                     assert(pc_to_fetch_icache == 'h8);
                     assert(selected_warp_idx == 'b0);
@@ -138,31 +143,105 @@ module test_ifetch_tag_stage(input clk, input rst_n);
                     ifd_cache_miss_warp_idx <= 'h0;
                 end
 
-                5: begin
+                6: begin
                     assert(ift_to_ifd_valid == 1'b0);
-
                     assert(ift_to_icache_fetch_en == 1'b0);
 
                     /* l2i wake bitmap */
                     l2i_to_ift_wake_bitmap  <= 'b0001;
                 end
 
-                6: begin
-                    assert(ift_to_ifd_valid == 1'b0);
-
-                    assert(ift_to_icache_fetch_en == 1'b0);
+                7: begin
                 end
 
-                7: begin
+                8: begin
                     assert(ift_to_ifd_valid == 1'b1);
-                    assert(pc_to_fetch_icache == 'h12);
+                    assert(pc_to_fetch_icache == 'h8);
                     assert(selected_warp_idx == 'b0);
 
                     assert(ift_to_icache_fetch_en == 1'b1);
                     assert(ift_to_icache_fetch_set_idx == 'b0);
                 end
 
-                8: begin
+                9: begin
+                    assert(ift_to_ifd_valid == 1'b1);
+                    assert(pc_to_fetch_icache == 'hc);
+                    assert(selected_warp_idx == 'b0);
+
+                    assert(ift_to_icache_fetch_en == 1'b1);
+                    assert(ift_to_icache_fetch_set_idx == 'b0);
+
+                    /* warp en bitmap */
+                    warp_en_bitmap  <=  'b0011;
+                end
+
+                10: begin
+                    assert(ift_to_ifd_valid == 1'b1);
+                    assert(pc_to_fetch_icache == 'h0);
+                    assert(selected_warp_idx == 'h1);
+
+                    assert(ift_to_icache_fetch_en == 1'b1);
+                    assert(ift_to_icache_fetch_set_idx == 'b0);
+                end
+
+                11: begin
+                    assert(ift_to_ifd_valid == 1'b1);
+                    assert(pc_to_fetch_icache == 'h10);
+                    assert(selected_warp_idx == 'h0);
+
+                    assert(ift_to_icache_fetch_en == 1'b1);
+                    assert(ift_to_icache_fetch_set_idx == 'b0);
+
+                    /* warp en bitmap */
+                    warp_en_bitmap  <=  'b1111;
+                end
+
+                12: begin
+                    assert(ift_to_ifd_valid == 1'b1);
+                    assert(pc_to_fetch_icache == 'h4);
+                    assert(selected_warp_idx == 'h1);
+
+                    assert(ift_to_icache_fetch_en == 1'b1);
+                    assert(ift_to_icache_fetch_set_idx == 'b0);
+
+                    /* warp en bitmap */
+                    warp_en_bitmap  <=  'b1111;
+                end
+
+                13: begin
+                    assert(ift_to_ifd_valid == 1'b1);
+                    assert(pc_to_fetch_icache == 'h0);
+                    assert(selected_warp_idx == 'h2);
+
+                    assert(ift_to_icache_fetch_en == 1'b1);
+                    assert(ift_to_icache_fetch_set_idx == 'b0);
+
+                    /* warp en bitmap */
+                    warp_en_bitmap  <=  'b1111;
+                end
+
+                14: begin
+                    assert(ift_to_ifd_valid == 1'b1);
+                    assert(pc_to_fetch_icache == 'h0);
+                    assert(selected_warp_idx == 'h3);
+
+                    assert(ift_to_icache_fetch_en == 1'b1);
+                    assert(ift_to_icache_fetch_set_idx == 'b0);
+
+                    /* warp en bitmap */
+                    warp_en_bitmap  <=  'b1111;
+                end
+
+                15: begin
+                    assert(ift_to_ifd_valid == 1'b1);
+                    assert(pc_to_fetch_icache == 'h14);
+                    assert(selected_warp_idx == 'h0);
+
+                    assert(ift_to_icache_fetch_en == 1'b1);
+                    assert(ift_to_icache_fetch_set_idx == 'b0);
+                end
+
+                16: begin
                     $display("PASS");
                     $finish;
                 end

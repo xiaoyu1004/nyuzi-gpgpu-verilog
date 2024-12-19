@@ -39,9 +39,9 @@ module ifetch_tag_stage(
     wire ift_valid;
     wire ift_ready_go;
 
-    assign ift_to_ifd_valid = ift_valid && ift_ready_go;
-
-    wire ift_allowin = ~ift_valid || (ift_ready_go && ifd_allowin);
+    // keep pipe data
+    assign ift_ready_go = 1'b1;
+    wire ift_allowin    = ~ift_valid || (ift_ready_go && ifd_allowin);
 
     sirv_gnrl_dfflr #(
         .DW (1)
@@ -80,7 +80,7 @@ module ifetch_tag_stage(
     wire [NUM_WARP_PER_CORE-1:0] can_fetch_warp_bitmap  = warp_en_bitmap & (~stop_fetch_warp_bitmap);
     wire icache_fetch_en                                = |can_fetch_warp_bitmap && ift_valid;
 
-    assign ift_ready_go = icache_fetch_en;
+    assign ift_to_ifd_valid = ift_valid && ift_ready_go && icache_fetch_en;
 
     wire [NUM_WARP_PER_CORE-1       :0]    selected_warp_oh;
     wire [NUM_WARP_PER_CORE_LOG-1   :0]    selected_warp_idx;
@@ -123,7 +123,7 @@ module ifetch_tag_stage(
             ) inst_ift_pc (
                 .clk        (clk)                           ,
                 .rst_n      (rst_n)                         ,
-                .rst_v      ('hfffffffc)                    ,
+                .rst_v      ('h00000000)                    ,
 
                 .lden       (to_ift_valid && ift_allowin)   ,
                 .dnxt       (ift_pc_nxt)                    ,
