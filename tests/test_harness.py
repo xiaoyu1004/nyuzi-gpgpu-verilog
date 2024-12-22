@@ -29,7 +29,9 @@ default_config = config['DEFAULT']
 
 # A place to dump temporary files. Cleared before each test.
 WORK_DIR                = default_config['WORK_DIR']
-HARDWARE_INCLUDE_DIR    = default_config['HARDWARE_INCLUDE_DIR']
+HARDWARE_ROOT_DIR       = default_config['HARDWARE_ROOT_DIR']
+HARDWARE_CORE_DIR       = default_config['HARDWARE_CORE_DIR']
+HARDWARE_CACHE_DIR      = default_config['HARDWARE_CACHE_DIR']
 HARDWARE_GENERAL_DIR    = default_config['HARDWARE_GENERAL_DIR']
 
 ALL_TARGETS     = ['verilator']

@@ -4,33 +4,34 @@ module cache #(
     parameter NUM_WAYS                  = 4                     ,
     parameter NUM_SETS                  = 16                    ,
 
-    parameter CACHE_TAG_WIDTH           = 22                    ,
+    parameter CACHE_LINE_TAG_WIDTH      = 22                    ,
     parameter CACHE_LINE_BYTES          = 64                    ,
 
     parameter NUM_WAYS_LOG              = $clog2(NUM_WAYS)      ,
     parameter NUM_SETS_LOG              = $clog2(NUM_SETS)      ,
 
-    parameter CACHE_LINE_BITS           = CACHE_LINE_BYTES * 8  ,
+    parameter CACHE_LINE_BITS           = CACHE_LINE_BYTES * 8  
 ) (
     input                                 clk                   ,
     input                                 rst_n                 ,
 
+    // tag stage
     input                                 access_tag_en         ,
     input   [NUM_SETS_LOG-1         :0]   access_tag_set_idx    ,
     
-    input   [CACHE_TAG_WIDTH-1      :0]   access_tag            ,
+    // data stage
+    input   [CACHE_LINE_TAG_WIDTH-1 :0]   access_tag            ,
     output                                access_tag_hit        ,
-    output  [NUM_WAYS_LOG-1         :0]   access_tag_hit_way_idx,
 
     input                                 access_data_en        ,
-    input   [NUM_WAYS_LOG-1         :0]   access_data_way_idx   ,
     input   [NUM_SETS_LOG-1         :0]   access_data_set_idx   ,
     output  [CACHE_LINE_BITS-1      :0]   access_data           ,
 
+    // l2
     input                                 update_tag_en         ,
     input   [NUM_WAYS_LOG-1         :0]   update_tag_way_idx    ,
     input   [NUM_SETS_LOG-1         :0]   update_tag_set_idx    ,
-    input   [CACHE_TAG_WIDTH-1      :0]   update_tag            ,
+    input   [CACHE_LINE_TAG_WIDTH-1 :0]   update_tag            ,
     input                                 update_tag_valid      ,
 
     input                                 update_data_en        ,
@@ -42,6 +43,8 @@ module cache #(
     input   [NUM_SETS_LOG-1         :0]   lru_fill_set          ,
     output  [NUM_WAYS_LOG-1         :0]   lru_fill_way_idx  
 );
+    wire [NUM_WAYS_LOG-1    :0]   access_tag_hit_way_idx;
+
     /* tag */
     wire [NUM_WAYS-1        :0] access_hit_oh;
 
@@ -49,21 +52,23 @@ module cache #(
         .NUM_WAYS           (NUM_WAYS)  ,
         .NUM_SETS           (NUM_SETS)  ,
 
-        .CACHE_TAG_WIDTH    (CACHE_TAG_WIDTH)
+        .CACHE_LINE_TAG_WIDTH    (CACHE_LINE_TAG_WIDTH)
     ) inst_cache_tag (
-        .clk            (clk)               ,
-        .rst_n          (rst_n)             ,
+        .clk                    (clk)                   ,
+        .rst_n                  (rst_n)                 ,
 
-        .access_en      (access_tag_en)     ,
-        .access_set_idx (access_tag_set_idx),
-        .access_tag     (access_tag)        ,
-        .access_hit_oh  (access_hit_oh)     ,
+        .access_en              (access_tag_en)         ,
+        .access_tag_set_idx     (access_tag_set_idx)    ,
+        .access_tag             (access_tag)            ,
 
-        .update_en      (update_tag_en)     ,
-        .update_way_idx (update_tag_way_idx),
-        .update_set_idx (update_tag_set_idx),
-        .update_tag     (update_tag)        ,
-        .update_valid   (update_tag_valid)
+        .access_data_set_idx    (access_data_set_idx)   ,
+        .access_hit_oh          (access_hit_oh)         ,
+
+        .update_en              (update_tag_en)         ,
+        .update_way_idx         (update_tag_way_idx)    ,
+        .update_set_idx         (update_tag_set_idx)    ,
+        .update_tag             (update_tag)            ,
+        .update_valid           (update_tag_valid)
     );
 
     assign access_tag_hit = |access_hit_oh;
@@ -76,6 +81,9 @@ module cache #(
     );
 
     /* data */
+    wire [NUM_WAYS_LOG-1   :0]   access_data_way_idx;
+    assign access_data_way_idx = access_tag_hit_way_idx;
+
     cache_data #(
         .NUM_WAYS           (NUM_WAYS)          ,
         .NUM_SETS           (NUM_SETS)          ,

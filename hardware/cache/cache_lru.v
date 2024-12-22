@@ -21,11 +21,11 @@ module cache_lru #(
     input   [NUM_SETS_LOG-1:0]      fill_set        ,
     output  [NUM_WAYS_LOG-1:0]      fill_way_idx
 );
-    wire read_en                        = access_en || fill_en;
+    wire                    read_en     = access_en || fill_en;
     wire [NUM_SETS_LOG-1:0] read_set    = fill_en ? fill_set : access_set;
-    wire [NUM_WAYS-2:0] lru_flags;
+    wire [NUM_WAYS-2:0]     lru_flags;
 
-    wire was_fill;
+    wire                    was_fill;
     wire [NUM_SETS_LOG-1:0] write_set;
 
     sirv_gnrl_dffr #(
@@ -52,13 +52,13 @@ module cache_lru #(
 
     wire [NUM_WAYS_LOG-1:0] keep_way_idx = was_fill ? fill_way_idx : update_way_idx;
 
-    wire write_lru_flags = ({(NUM_WAYS-1){(keep_way_idx == 2'b00)}} & {2'b11, lru_flags[0]}) |
-                           ({(NUM_WAYS-1){(keep_way_idx == 2'b01)}} & {2'b01, lru_flags[0]}) |
-                           ({(NUM_WAYS-1){(keep_way_idx == 2'b10)}} & {lru_flags[2], 2'b01}) |
-                           ({(NUM_WAYS-1){(keep_way_idx == 2'b11)}} & {lru_flags[2], 2'b00});
+    wire [NUM_WAYS-2:0] write_lru_flags = ({(NUM_WAYS-1){(keep_way_idx == 2'b00)}} & {2'b11, lru_flags[0]}) |
+                                          ({(NUM_WAYS-1){(keep_way_idx == 2'b01)}} & {2'b01, lru_flags[0]}) |
+                                          ({(NUM_WAYS-1){(keep_way_idx == 2'b10)}} & {lru_flags[2], 2'b01}) |
+                                          ({(NUM_WAYS-1){(keep_way_idx == 2'b11)}} & {lru_flags[2], 2'b00});
 
     sram_1r1w #(
-        .DATA_WIDTH (NUM_WAYS)  ,
+        .DATA_WIDTH (NUM_WAYS-1)  ,
         .SIZE       (NUM_SETS)  
     ) inst_sram_lru_flags (
         .clk        (clk)               ,
@@ -72,8 +72,8 @@ module cache_lru #(
         .write_data (write_lru_flags)
     );
 
-    assign update_way_idx = ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-2:1] == 2'b00)}} & {2'b00}) |
-                            ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-2:1] == 2'b10)}} & {2'b01}) |
-                            ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-3:0] == 2'b10)}} & {2'b10}) |
-                            ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-3:0] == 2'b11)}} & {2'b11});
+    assign fill_way_idx = ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-2:1] == 2'b00)}} & {2'b00}) |
+                          ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-2:1] == 2'b10)}} & {2'b01}) |
+                          ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-3:0] == 2'b10)}} & {2'b10}) |
+                          ({NUM_WAYS_LOG{(lru_flags[NUM_WAYS-3:0] == 2'b11)}} & {2'b11});
 endmodule

@@ -24,8 +24,22 @@ module cache_data #(
     input   [NUM_SETS_LOG-1     :0] update_set_idx  ,
     input   [CACHE_LINE_BITS-1  :0] update_data     
 );
+    // reg
+    wire [NUM_WAYS_LOG-1   :0] access_way_idx_r;
+
+    sirv_gnrl_dfflr #(
+        .DW(NUM_WAYS_LOG)
+    ) inst_tag_valid (
+        .clk    (clk)               ,
+        .rst_n  (rst_n)             ,
+
+        .lden   (access_en)         ,
+        .dnxt   (access_way_idx)    ,
+        .qout   (access_way_idx_r)
+    );
+
     // data
-    wire [CACHE_LINE_BITS-1:0] read_data[NUM_WAYS];
+    wire [CACHE_LINE_BITS-1:0] read_data[NUM_WAYS-1:0];
 
     genvar i;
     generate 
@@ -49,5 +63,5 @@ module cache_data #(
         end
     endgenerate
 
-    assign access_data = read_data[hit_way_idx];
+    assign access_data = read_data[access_way_idx_r];
 endmodule
